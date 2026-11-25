@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>For Sitara ❤️ — A Special Surprise</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #140812;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+    #game-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Intro Overlay */
+    #intro-screen {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #3b122b 0%, #12060e 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 50;
+      color: #fff;
+      transition: opacity 0.8s ease;
+    }
+    #intro-screen h1 {
+      font-size: clamp(1.8rem, 6vw, 2.8rem);
+      color: #ff85b3;
+      text-shadow: 0 0 20px rgba(255, 77, 148, 0.7);
+      margin-bottom: 12px;
+    }
+    #intro-screen p {
+      font-size: clamp(0.95rem, 3.5vw, 1.15rem);
+      color: #f8d7e5;
+      max-width: 420px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+    #start-btn {
+      padding: 14px 36px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, #ff3377, #ff758c);
+      border: none;
+      border-radius: 50px;
+      box-shadow: 0 8px 25px rgba(255, 51, 119, 0.55);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    #start-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* HUD */
+    #hud {
+      position: fixed;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(25, 10, 20, 0.68);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 133, 179, 0.35);
+      color: #ffe6f0;
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 10;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Subtle Rotate Button for Photo */
+    #rotate-photo-btn {
+      position: fixed;
+      top: 14px;
+      right: 14px;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(25, 10, 20, 0.65);
+      border: 1px solid rgba(255, 180, 210, 0.35);
+      color: #ffd6e7;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 15;
+      cursor: pointer;
+    }
+
+    /* Virtual Joystick */
+    #joystick-zone {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      width: 116px;
+      height: 116px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 2px solid rgba(255, 133, 179, 0.35);
+      z-index: 15;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #joystick-knob {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #ff85b3, #e62e6b);
+      box-shadow: 0 4px 14px rgba(255, 51, 119, 0.6);
+      transform: translate(0px, 0px);
+      pointer-events: none;
+    }
+
+    #look-hint {
+      position: fixed;
+      bottom: 28px;
+      right: 20px;
+      color: rgba(255, 214, 231, 0.65);
+      font-size: 0.78rem;
+      background: rgba(20, 8, 16, 0.5);
+      padding: 6px 12px;
+      border-radius: 20px;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Proposal Choice UI */
+    #proposal-ui {
+      position: fixed;
+      bottom: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      background: rgba(28, 10, 22, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 20px 28px;
+      border-radius: 24px;
+      border: 1.5px solid rgba(255, 117, 160, 0.55);
+      box-shadow: 0 12px 35px rgba(255, 40, 110, 0.35);
+      z-index: 25;
+      text-align: center;
+      min-width: 270px;
+    }
+    #proposal-ui h2 {
+      color: #ff9ec4;
+      font-size: 1.35rem;
+      text-shadow: 0 0 12px rgba(255, 80, 140, 0.6);
+    }
+    .choice-row {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      min-height: 48px;
+    }
+    .choice-btn {
+      padding: 11px 26px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    #yes-btn {
+      background: linear-gradient(135deg, #ff2a75, #ff6b9d);
+      color: #fff;
+      box-shadow: 0 6px 20px rgba(255, 42, 117, 0.6);
+    }
+    #yes-btn:active {
+      transform: scale(0.94);
+    }
+    #no-btn {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffd6e7;
+      border: 1px solid rgba(255, 180, 210, 0.4);
+    }
+
+    /* Celebration Message */
+    #celebration-banner {
+      position: fixed;
+      top: 14%;
+      left: 50%;
+      transform: translateX(-50%) scale(0.8);
+      opacity: 0;
+      background: linear-gradient(135deg, rgba(65, 14, 42, 0.92), rgba(30, 8, 22, 0.92));
+      border: 2px solid #ff85b3;
+      padding: 18px 30px;
+      border-radius: 24px;
+      text-align: center;
+      color: #fff;
+      box-shadow: 0 0 40px rgba(255, 64, 129, 0.65);
+      z-index: 30;
+      pointer-events: none;
+      transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+      width: 88%;
+      max-width: 420px;
+    }
+    #celebration-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+    #celebration-banner h1 {
+      font-size: 1.5rem;
+      color: #ff9ec4;
+      margin-bottom: 6px;
+    }
+    #celebration-banner p {
+      font-size: 0.98rem;
+      color: #ffe6f0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Intro Screen -->
+  <div id="intro-screen">
+    <h1>For Sitara ❤️</h1>
+    <p>Maine tumhare liye ek chhoti si 3D duniya banayi hai... Andar aao aur dono rooms explore karo ✨</p>
+    <button id="start-btn">Enter World ❤️✨</button>
+  </div>
+
+  <!-- Top HUD -->
+  <div id="hud">Room 1: Love Gallery ❤️</div>
+  <button id="rotate-photo-btn" title="Rotate Photo">🔄</button>
+
+  <!-- Mobile Controls -->
+  <div id="joystick-zone">
+    <div id="joystick-knob"></div>
+  </div>
+  <div id="look-hint">Swipe screen to look around</div>
+
+  <!-- Proposal Buttons -->
+  <div id="proposal-ui">
+    <h2>Will U Marry Me? 💍</h2>
+    <div class="choice-row">
+      <button id="yes-btn" class="choice-btn">YES ❤️</button>
+      <button id="no-btn" class="choice-btn">NO 🙈</button>
+    </div>
+  </div>
+
+  <!-- Celebration Banner -->
+  <div id="celebration-banner">
+    <h1>She Said YES! 💍❤️</h1>
+    <p>Forever starts now, Sitara! I Love You So Much ✨</p>
+  </div>
+
+  <canvas id="game-canvas"></canvas>
+
+  <!-- Three.js CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    // ==========================================
+    // 1. AUDIO SYNTH (Romantic Chimes)
+    // ==========================================
+    let audioCtx = null;
+    function playChime(notes = [523.25, 659.25, 783.99, 1046.5], duration = 0.45) {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime + idx * 0.14);
+          gain.gain.setValueAtTime(0.001, audioCtx.currentTime + idx * 0.14);
+          gain.gain.exponentialRampToValueAtTime(0.14, audioCtx.currentTime + idx * 0.14 + 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + idx * 0.14 + duration);
+          osc.connect
